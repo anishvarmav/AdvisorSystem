@@ -1,0 +1,7 @@
+:host ::ng-deep .p-sortable-column-icon {
+    margin-top: -5px;
+}
+
+:host ::ng-deep .p-dialog .p-dialog-content {
+    overflow: visible !important;
+}

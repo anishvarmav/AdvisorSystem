@@ -1,0 +1,6 @@
+@AdvisorSystem.Server_HostAddress = http://localhost:5106
+
+GET {{AdvisorSystem.Server_HostAddress}}/advisor/
+Accept: application/json
+
+###

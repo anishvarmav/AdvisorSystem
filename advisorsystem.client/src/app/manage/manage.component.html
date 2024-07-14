@@ -1,0 +1,143 @@
+<p-panel>
+    <p-toast />
+    <p-toolbar styleClass="mb-4">
+        <ng-template pTemplate="left">
+            <p-button severity="success" label="Create" icon="pi pi-plus" class="mr-2" (onClick)="showCreateDialog()" />
+        </ng-template>
+    </p-toolbar>
+
+    <p-table [value]="advisors" [rows]="5" [paginator]="true"
+        [globalFilterFields]="['name', 'address', 'phone', 'healthStatus']" [rowHover]="true" dataKey="id"
+        [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
+        <ng-template pTemplate="caption">
+            <div class="flex justify-content-between">
+                <h3 class="m-0">Manage Advisors</h3>
+            </div>
+        </ng-template>
+        <ng-template pTemplate="header">
+            <tr>
+                <th style="width: 20%" pSortableColumn="name">Name
+                    <p-sortIcon field="name" />
+                    <p-columnFilter type="text" field="name" display="menu" />
+                </th>
+                <th style="width: 15%">SIN</th>
+                <th style="width: 32%" style="min-width:20rem">Address
+                    <p-columnFilter type="text" field="address" display="menu" />
+                </th>
+                <th style="width: 15%">Phone Number
+                    <p-columnFilter type="text" field="phone" display="menu" />
+                </th>
+                <th style="width: 13%" pSortableColumn="healthStatus">Health Status
+                    <p-sortIcon field="healthStatus" />
+                    <p-columnFilter field="healthStatus" matchMode="equals" display="menu">
+                        <ng-template pTemplate="filter" let-filter="filterCallback">
+                            <p-dropdown [options]="healthStatuses" (onChange)="filter($event.value)" placeholder="Any">
+                                <ng-template let-option pTemplate="item">
+                                    <p-tag [value]="option.value" [severity]="getHealthStatus(option.label)" />
+                                </ng-template>
+                            </p-dropdown>
+                        </ng-template>
+                    </p-columnFilter>
+                </th>
+                <th style="width: 10%"></th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-advisor>
+            <tr>
+                <td>
+                    {{ advisor.name }}
+                </td>
+                <td>
+                    {{ advisor.sin | maskString }}
+                </td>
+                <td>
+                    {{ advisor.address }}
+                </td>
+                <td>
+                    {{ advisor.phone }}
+                </td>
+                <td style="text-align: center;">
+                    <p-tag [value]="advisor.healthStatus" [severity]="getHealthStatus(advisor.healthStatus)" />
+                </td>
+                <td>
+                    <p-button icon="pi pi-pencil" severity="success" [rounded]="true" [outlined]="true" class="mr-2"
+                        (onClick)="showEditDialog(advisor)" />
+                    <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true"
+                        (onClick)="showDeleteDialog(advisor)" />
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="6">No advisors found.</td>
+            </tr>
+        </ng-template>
+    </p-table>
+
+    <p-dialog [(visible)]="advisorSaveDialog" [style]="{ width: '450px' }" header="Advisor Details" [modal]="true"
+        styleClass="p-fluid">
+        <ng-template pTemplate="content">
+            <form [formGroup]="advisorForm">
+                <div class="field" style="text-align: left;">
+                    <label for="name">Name</label>
+                    <input type="text" pInputText id="name" formControlName="name" autocomplete="off" autofocus />
+                    <small class="p-error" *ngIf="submitted && advisorForm.get('name')?.errors?.['required']">
+                        Name is required.
+                    </small>
+                </div>
+                <div class="field" style="text-align: left;">
+                    <label for="sin">SIN</label>
+                    <input type="text" pInputText id="sin" formControlName="sin" autocomplete="off" />
+                    <small class="p-error" *ngIf="submitted && advisorForm.get('sin')?.errors?.['required']">
+                        SIN is required.
+                    </small>
+                    <small class="p-error" *ngIf="submitted && advisorForm.get('sin')?.errors?.['pattern']">
+                        SIN should be 9 digits long.
+                    </small>
+                </div>
+                <div class="field" style="text-align: left;">
+                    <label for="address">Address</label>
+                    <input type="text" pInputText id="address" formControlName="address" autocomplete="off" />
+                </div>
+                <div class="field" style="text-align: left;">
+                    <label for="phone">Phone Number</label>
+                    <input type="text" pInputText id="phone" formControlName="phone" autocomplete="off" />
+                    <small class="p-error" *ngIf="submitted && advisorForm.get('phone')?.errors?.['pattern']">
+                        Phone number should be 8 digits long.
+                    </small>
+                </div>
+                <div *ngIf="!isCreate" class="field" style="text-align: left;">
+                    <label for="healthStatus">Health Status</label>
+                    <p-dropdown formControlName="healthStatus" id="healthStatus" [options]="healthStatuses"
+                        [style]="{ width: '40%' }">
+                        <ng-template pTemplate="selectedItem" let-selectedOption>
+                            <p-tag [value]="selectedOption?.label"
+                                [severity]="getHealthStatus(selectedOption?.label || 'Green')"></p-tag>
+                        </ng-template>
+                        <ng-template pTemplate="item" let-option>
+                            <p-tag [value]="option.label" [severity]="getHealthStatus(option.label)"></p-tag>
+                        </ng-template>
+                    </p-dropdown>
+                </div>
+            </form>
+        </ng-template>
+
+        <ng-template pTemplate="footer">
+            <p-button class="mr-2" label="Cancel" icon="pi pi-times" severity="danger" (onClick)="hideSaveDialog()" />
+            <p-button label="Save" icon="pi pi-check" severity="success" (onClick)="saveAdvisor()" />
+        </ng-template>
+    </p-dialog>
+
+    <p-dialog [(visible)]="advisorDeleteDialog" [style]="{ width: '450px' }" header="Delete Advisor" [modal]="true"
+        styleClass="p-fluid">
+        <ng-template pTemplate="content">
+            <p style="font-size: large;">Are you sure you want to delete advisor<br />"{{ advisor.name }}"?</p>
+        </ng-template>
+
+        <ng-template pTemplate="footer">
+            <p-button class="mr-2" label="Yes" icon="pi pi-check" severity="success"
+                (onClick)="deleteSelectedAdvisor(advisor)" />
+            <p-button label="No" icon="pi pi-times" severity="danger" (onClick)="hideDeleteDialog()" />
+        </ng-template>
+    </p-dialog>
+</p-panel>
