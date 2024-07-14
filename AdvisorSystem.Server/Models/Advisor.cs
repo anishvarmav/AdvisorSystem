@@ -21,7 +21,7 @@ public class Advisor
 
     public string? HealthStatus { get; set; }
 
-
+    // Method to generate a health status based on a random value
     private static readonly Random _random = new Random();
     public static string GenerateHealthStatus()
     {
